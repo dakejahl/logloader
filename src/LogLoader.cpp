@@ -358,16 +358,17 @@ std::string LogLoader::filepath_from_entry(const mavsdk::LogFiles::Entry entry)
 
 bool LogLoader::server_reachable()
 {
-	httplib::Result res;
+	httplib::SSLClient cli(_settings.server);
+	httplib::Result res = cli.Get("/");;
 
-	if (_settings.server.find("https") != std::string::npos) {
-		httplib::SSLClient cli(_settings.server);
-		res = cli.Get("/");
+	// if (_settings.server.find("https") != std::string::npos) {
+	// 	httplib::SSLClient cli(_settings.server);
+	// 	res = cli.Get("/");
 
-	} else {
-		httplib::Client cli(_settings.server);
-		res = cli.Get("/");
-	}
+	// } else {
+	// 	httplib::Client cli(_settings.server);
+	// 	res = cli.Get("/");
+	// }
 
 	bool success = res && res->status == 200;
 
@@ -409,16 +410,17 @@ bool LogLoader::send_log_to_server(const std::string& file_path)
 		  << std::setw(8) << std::fixed << std::setprecision(2) << fs::file_size(file_path) / 1e6 << "MB"
 		  << std::flush << std::endl;
 
-	httplib::Result res;
+	httplib::SSLClient cli(_settings.server);
+	httplib::Result res =  cli.Post("/upload", items);;
 
-	if (_settings.server.find("https") != std::string::npos) {
-		httplib::SSLClient cli(_settings.server);
-		res = cli.Post("/upload", items);
+	// if (_settings.server.find("https") != std::string::npos) {
+	// 	httplib::SSLClient cli(_settings.server);
+	// 	res = cli.Post("/upload", items);
 
-	} else {
-		httplib::Client cli(_settings.server);
-		res = cli.Post("/upload", items);
-	}
+	// } else {
+	// 	httplib::Client cli(_settings.server);
+	// 	res = cli.Post("/upload", items);
+	// }
 
 	if (res && res->status == 302) {
 		std::string url = _settings.server + res->get_header_value("Location");
